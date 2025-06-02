@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Smart Store</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="container">
+  <div class="kotak" onclick="detail(this)"
+       data-nama="Pulpen Merah"
+       data-deskripsi="Pulpen warna merah tajam"
+       data-harga="Rp 1000"
+       data-gambar="https://via.placeholder.com/200x100?text=Pulpen+Merah">
+    <h4>Pulpen Merah</h4>
+    <img src="https://via.placeholder.com/200x100?text=Pulpen+Merah" />
+    <p>Pulpen warna merah tajam</p>
+    <b>Rp 1000</b>
+  </div>
+
+  <div class="kotak" onclick="detail(this)"
+       data-nama="Pensil HB"
+       data-deskripsi="Pensil kayu keras"
+       data-harga="Rp 500"
+       data-gambar="https://via.placeholder.com/200x100?text=Pensil+HB">
+    <h4>Pensil HB</h4>
+    <img src="https://via.placeholder.com/200x100?text=Pensil+HB" />
+    <p>Pensil kayu keras</p>
+    <b>Rp 500</b>
+  </div>
+</div>
+
+<div id="overlay">
+  <div class="overlay-content">
+    <span class="close-btn" onclick="tutup()">×</span>
+    <h4 id="detail-nama"></h4>
+    <img id="detail-gambar" src="" />
+    <p id="detail-deskripsi"></p>
+    <b id="detail-harga"></b>
+
+    <form id="orderForm" onsubmit="return kirimPesan(event)">
+      <label>Nama:</label>
+      <input type="text" id="namaPembeli" required />
+      
+      <label>Nomor HP:</label>
+      <input type="tel" id="nomorHp" placeholder="+62..." required />
+      
+      <label>Alamat Lokasi:</label>
+      <input type="text" id="alamatLokasi" required />
+      
+      <label>Catatan Barang:</label>
+      <textarea id="catatanBarang" rows="3"></textarea>
+
+      <button type="submit">Pesan via Telegram</button>
+    </form>
+  </div>
+</div>
+
+<!-- Google Maps Autocomplete -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places&callback=initAutocomplete" async defer></script>
+
+<script>
+function initAutocomplete() {
+  const input = document.getElementById('alamatLokasi');
+  new google.maps.places.Autocomplete(input, {
+    types: ['geocode'],
+    componentRestrictions: { country: 'id' }
+  });
+}
+
+function detail(el) {
+  document.getElementById('detail-nama').textContent = el.dataset.nama;
+  document.getElementById('detail-deskripsi').textContent = el.dataset.deskripsi;
+  document.getElementById('detail-harga').textContent = el.dataset.harga;
+  document.getElementById('detail-gambar').src = el.dataset.gambar;
+  document.getElementById('orderForm').reset();
+  document.getElementById('overlay').style.display = 'flex';
+}
+
+function tutup() {
+  document.getElementById('overlay').style.display = 'none';
+}
+
+function kirimPesan(event) {
+  event.preventDefault();
+  const data = {
+    produk: document.getElementById('detail-nama').textContent,
+    deskripsi: document.getElementById('detail-deskripsi').textContent,
+    harga: document.getElementById('detail-harga').textContent,
+    nama: document.getElementById('namaPembeli').value.trim(),
+    hp: document.getElementById('nomorHp').value.trim(),
+    alamat: document.getElementById('alamatLokasi').value.trim(),
+    catatan: document.getElementById('catatanBarang').value.trim()
+  };
+
+  fetch('send.php', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.ok) {
+      alert("Pesan berhasil dikirim ke Telegram!");
+      tutup();
+    } else {
+      alert("Gagal kirim pesan!");
+    }
+  }).catch(err => {
+    alert("Error koneksi ke server.");
+    console.error(err);
+  });
+
+  return false;
+}
+</script>
+
+</body>
+</html>
